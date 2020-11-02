@@ -1,0 +1,48 @@
+version: "3.8"
+services:
+  web:
+    image: florislava/web-legacy-php54:latest
+    restart: always
+    environment:
+      LOCALTIME: Europe/Amsterdam
+
+      # Apache configuration (HTTPD__ prefix)
+      HTTPD__DocumentRoot: /var/www/html
+      HTTPD__ServerName: web
+
+      # PHP config (PHP__ prefix)
+      PHP__memory_limit: 1024MB
+      PHP__session.save_path: /var/www/html
+
+      # Enable modules
+      PHP_php5enmod: >
+        gd
+        intl
+        mysqli
+        xdebug
+    ports:
+      - 3200:80
+    volumes:
+      - ./html/:/var/www/html/
+
+  db:
+    image: mariadb
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: famforum
+    volumes:
+      - database:/var/lib/mysql
+      - ./db/:/docker-entrypoint-initdb.d/
+
+  myadmin:
+    image: phpmyadmin/phpmyadmin:4.8.4
+    restart: always
+    environment:
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: famforum
+      UPLOAD_LIMIT: 512MB
+    ports:
+      - 3300:80
+volumes:
+  database:
